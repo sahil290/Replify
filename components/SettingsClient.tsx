@@ -185,7 +185,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       {/* Notifications */}
       <Section
         title="Email Notifications"
-        desc="Control which emails SupportPilot sends you."
+        desc="Control which emails Replify sends you."
       >
         <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 mb-4">
           <Bell className="w-4 h-4 text-blue-600 shrink-0" />
@@ -216,7 +216,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       </Section>
 
       {/* AI Config */}
-      <Section title="AI Configuration" desc="Configure how SupportPilot's AI behaves.">
+      <Section title="AI Configuration" desc="Configure how Replify's AI behaves.">
         <Row
           label="Auto-send responses"
           desc="Automatically send AI replies with confidence ≥ 95%"

@@ -13,8 +13,8 @@ import CTASection from '@/components/landing/CTASection'
 import Footer from '@/components/landing/Footer'
 
 export const metadata: Metadata = {
-  title:       'SupportPilot — Reduce Support Tickets by 40% with AI',
-  description: 'SupportPilot analyzes support tickets and automatically generates accurate, empathetic replies. Save your team hours every day with AI-powered support automation.',
+  title:       'Replify — Reduce Support Tickets by 40% with AI',
+  description: 'Replify analyzes support tickets and automatically generates accurate, empathetic replies. Save your team hours every day with AI-powered support automation.',
   alternates:  { canonical: '/' },
 }
 

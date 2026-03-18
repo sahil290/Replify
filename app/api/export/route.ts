@@ -69,7 +69,7 @@ export async function GET(request: Request) {
     ]))
 
     const csv      = [rowToCSV(headers), ...rows].join('\r\n')
-    const filename = `supportpilot-tickets-${new Date().toISOString().slice(0, 10)}.csv`
+    const filename = `replify-tickets-${new Date().toISOString().slice(0, 10)}.csv`
 
     return new NextResponse(csv, {
       status: 200,

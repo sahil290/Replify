@@ -109,21 +109,21 @@ export async function POST(request: Request) {
     // Send invite email
     await sendEmail({
       to:      email,
-      subject: `${inviterName} invited you to join ${workspaceName} on SupportPilot`,
+      subject: `${inviterName} invited you to join ${workspaceName} on Replify`,
       html: `
         <!DOCTYPE html>
         <html>
         <body style="font-family:sans-serif;background:#F9FAFB;padding:40px 0;">
           <table width="600" style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden;">
             <tr><td style="background:#2563EB;padding:28px 32px;">
-              <h1 style="margin:0;font-size:22px;color:#fff;">You're invited to join SupportPilot</h1>
+              <h1 style="margin:0;font-size:22px;color:#fff;">You're invited to join Replify</h1>
             </td></tr>
             <tr><td style="padding:28px 32px;">
               <p style="color:#374151;font-size:15px;line-height:1.6;">
-                <strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on SupportPilot as a <strong>${role}</strong>.
+                <strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on Replify as a <strong>${role}</strong>.
               </p>
               <p style="color:#6B7280;font-size:14px;line-height:1.6;">
-                SupportPilot uses AI to analyze support tickets and automatically generate replies — saving your team hours every day.
+                Replify uses AI to analyze support tickets and automatically generate replies — saving your team hours every day.
               </p>
               <table style="margin-top:24px;">
                 <tr><td style="background:#2563EB;border-radius:10px;">

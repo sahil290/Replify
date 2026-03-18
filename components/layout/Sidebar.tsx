@@ -43,7 +43,7 @@ export default function Sidebar({ onClose, userPlan = 'starter' }: SidebarProps)
           <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
             <Layers className="w-3.5 h-3.5 text-white" />
           </div>
-          SupportPilot
+          Replify
         </Link>
         {onClose && (
           <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
