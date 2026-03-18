@@ -98,11 +98,11 @@ export async function POST(request: Request) {
 
     // Create frustration alert if high/critical
     if (frustration.risk === 'high' || frustration.risk === 'critical') {
-      supabase.from('frustration_alerts').insert({
+      void Promise.resolve(supabase.from('frustration_alerts').insert({
         user_id: userId, ticket_id: ticket?.id ?? null,
         frustration_score: frustration.score, risk_level: frustration.risk,
         signals: frustration.signals, category: result.category,
-      }).then(() => {}).catch(console.error)
+      })).catch(console.error)
     }
 
     // Mark job as done

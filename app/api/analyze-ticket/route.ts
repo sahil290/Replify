@@ -188,7 +188,7 @@ export async function POST(request: Request) {
 
     // Create frustration alert if high/critical
     if (frustration.risk === 'high' || frustration.risk === 'critical') {
-      supabase.from('frustration_alerts').insert({
+      void Promise.resolve(supabase.from('frustration_alerts').insert({
         user_id:           user.id,
         ticket_id:         ticket?.id ?? null,
         frustration_score: frustration.score,
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
         signals:           frustration.signals,
         category:          result.category,
         customer_email:    null,
-      }).then(() => {}).catch(console.error)
+      })).catch(console.error)
 
       // Send Slack alert if configured
       const slackProfile = await supabase
@@ -234,10 +234,10 @@ export async function POST(request: Request) {
             appUrl,
           })
           .then(() => {
-            supabase.from('slack_alert_log').insert({
+            void Promise.resolve(supabase.from('slack_alert_log').insert({
               user_id:   user.id,
               ticket_id: ticket?.id ?? null,
-            }).then(() => {}).catch(console.error)
+            })).catch(console.error)
           })
           .catch(err => console.error('[slack] alert failed:', err))
         }
