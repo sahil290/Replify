@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -29,8 +31,8 @@ export async function PATCH(request: Request) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
     const updates: any = { updated_at: new Date().toISOString() }
-    if (status) updates.status = status
-    if (title) updates.title = title
+    if (status)  updates.status = status
+    if (title)   updates.title  = title
     if (content) updates.content = content
     if (status === 'published') updates.published_at = new Date().toISOString()
 

@@ -1,5 +1,8 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimiters, rateLimitResponse, sanitizeText, sanitizeField, sanitizeName, sanitizeEmail, sanitizeInt, sanitizeRole, isSuspicious } from '@/lib/security'
 
 export async function POST(request: Request) {
   try {
@@ -7,14 +10,13 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { enabled, threshold } = await request.json()
+    const rl = rateLimiters.general(user.id)
+    if (!rl.success) return rateLimitResponse(rl)
 
-    if (typeof enabled !== 'boolean') {
-      return NextResponse.json({ error: 'enabled must be boolean' }, { status: 400 })
-    }
-    if (typeof threshold !== 'number' || threshold < 0 || threshold > 100) {
-      return NextResponse.json({ error: 'threshold must be 0-100' }, { status: 400 })
-    }
+    const body      = await request.json()
+    const enabled   = body.enabled === true
+    const threshold = sanitizeInt(body.threshold, 0, 100) ?? 0
+
     if (enabled && threshold === 0) {
       return NextResponse.json({ error: 'Must set a threshold before enabling' }, { status: 400 })
     }

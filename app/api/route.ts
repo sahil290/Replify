@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -8,12 +10,12 @@ export async function GET(request: Request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
-    const limit = Math.min(25, parseInt(searchParams.get('limit') ?? '20'))
-    const search = searchParams.get('search') ?? ''
-    const urgency = searchParams.get('urgency') ?? ''
+    const page     = Math.max(1, parseInt(searchParams.get('page')     ?? '1'))
+    const limit    = Math.min(25, parseInt(searchParams.get('limit')   ?? '20'))
+    const search   = searchParams.get('search')   ?? ''
+    const urgency  = searchParams.get('urgency')  ?? ''
     const category = searchParams.get('category') ?? ''
-    const sort = searchParams.get('sort') ?? 'newest'
+    const sort     = searchParams.get('sort')     ?? 'newest'
 
     const offset = (page - 1) * limit
 
@@ -55,8 +57,8 @@ export async function GET(request: Request) {
     if (error) throw error
 
     return NextResponse.json({
-      tickets: tickets ?? [],
-      total: count ?? 0,
+      tickets:    tickets ?? [],
+      total:      count  ?? 0,
       page,
       limit,
       totalPages: Math.ceil((count ?? 0) / limit),

@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+
+import { rateLimiters, rateLimitResponse } from '@/lib/security'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserPlan } from '@/lib/get-user-plan'
@@ -18,6 +21,10 @@ export async function GET(request: Request) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // Rate limit — 10 exports per hour
+    const rl = rateLimiters.export(user.id)
+    if (!rl.success) return rateLimitResponse(rl)
 
     const { plan, isActive } = await getUserPlan(supabase, user.id)
 
@@ -62,7 +69,7 @@ export async function GET(request: Request) {
     ]))
 
     const csv      = [rowToCSV(headers), ...rows].join('\r\n')
-    const filename = `replify-tickets-${new Date().toISOString().slice(0, 10)}.csv`
+    const filename = `supportpilot-tickets-${new Date().toISOString().slice(0, 10)}.csv`
 
     return new NextResponse(csv, {
       status: 200,

@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+
+import { rateLimiters, rateLimitResponse, sanitizeText, sanitizeField, sanitizeName, sanitizeEmail, sanitizeInt, sanitizeRole, isSuspicious } from '@/lib/security'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserPlan } from '@/lib/get-user-plan'
@@ -14,8 +17,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Trial expired. Please upgrade.', code: 'TRIAL_EXPIRED' }, { status: 403 })
     }
 
+    const rl = rateLimiters.general(user.id)
+    if (!rl.success) return rateLimitResponse(rl)
+
     const body: SaveResponseRequest = await request.json()
-    if (!body.response_text?.trim()) return NextResponse.json({ error: 'response_text is required' }, { status: 400 })
+    const responseText = sanitizeText(body.response_text, 5000)
+    const title        = sanitizeField(body.title ?? '', 200)
+    if (!responseText) return NextResponse.json({ error: 'response_text is required' }, { status: 400 })
 
     // Cap saved replies at 50 for starter, unlimited for pro+
     const { plan } = await getUserPlan(supabase, user.id)
@@ -32,12 +40,12 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase.from('saved_responses')
       .insert({
-        user_id: user.id,
-        ticket_id: body.ticket_id ?? null,
-        category: body.category,
-        urgency: body.urgency,
-        response_text: body.response_text,
-        title: body.title,
+        user_id:       user.id,
+        ticket_id:     body.ticket_id ?? null,
+        category:      body.category,
+        urgency:       body.urgency,
+        response_text: responseText,
+        title:         title || null,
       }).select().single()
 
     if (error) throw error

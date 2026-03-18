@@ -1,10 +1,15 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserPlan } from '@/lib/get-user-plan'
+import { rateLimiters, rateLimitResponse, sanitizeText, sanitizeField, sanitizeName, sanitizeEmail, sanitizeInt, sanitizeRole, isSuspicious } from '@/lib/security'
+import { logUsage, calculateCost, extractGroqUsage } from '@/lib/usage-tracker'
 
 const GROQ_MODEL = process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile'
 
-async function callGroq(prompt: string): Promise<string> {
+async function callGroq(prompt: string): Promise<{ text: string; usage: any; latency_ms: number }> {
+  const start = Date.now()
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method:  'POST',
     headers: {
@@ -18,8 +23,13 @@ async function callGroq(prompt: string): Promise<string> {
       messages:    [{ role: 'user', content: prompt }],
     }),
   })
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content ?? '{}'
+  const data       = await res.json()
+  const latency_ms = Date.now() - start
+  return {
+    text:       data.choices?.[0]?.message?.content ?? '{}',
+    usage:      data.usage,
+    latency_ms,
+  }
 }
 
 const PATTERNS = [
@@ -60,15 +70,24 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    // Rate limit — 20 per hour (AI generation is expensive)
+    const rl = rateLimiters.kbGenerate(user.id)
+    if (!rl.success) return rateLimitResponse(rl)
+
     const { plan, isActive } = await getUserPlan(supabase, user.id)
     if (!isActive) return NextResponse.json({ error: 'Trial expired' }, { status: 403 })
     if (plan === 'starter') return NextResponse.json({ error: 'Knowledge base requires Pro plan.', code: 'PLAN_UPGRADE_REQUIRED' }, { status: 403 })
 
-    const { query, category, ticket_count, sample_tickets } = await request.json()
+    const body         = await request.json()
+    const query        = sanitizeField(body.query, 200)
+    const category     = sanitizeField(body.category ?? '', 100) || null
+    const ticket_count = typeof body.ticket_count === 'number' ? body.ticket_count : 0
+    const sample_tickets = Array.isArray(body.sample_tickets) ? body.sample_tickets : []
+
     if (!query) return NextResponse.json({ error: 'query is required' }, { status: 400 })
 
-    const samplesText = (sample_tickets ?? []).slice(0, 5)
-      .map((t: string, i: number) => `Example ${i + 1}: "${t}"`)
+    const samplesText = sample_tickets.slice(0, 5)
+      .map((t: string, i: number) => `Example ${i + 1}: "${sanitizeText(t, 500)}"`)
       .join('\n')
 
     const prompt = `You are a technical writer for a SaaS support team. Generate a comprehensive, friendly help center article based on this recurring customer question.
@@ -86,10 +105,24 @@ Return ONLY valid JSON (no markdown, no backticks) with:
 - tags: string[] (3-5 tags)
 - meta_description: string`
 
-    const raw = await callGroq(prompt)
+    const groqResult = await callGroq(prompt)
+    const raw = groqResult.text
     let article: any
     try { article = JSON.parse(raw.replace(/```json|```/g, '').trim()) }
     catch { return NextResponse.json({ error: 'AI returned invalid response' }, { status: 500 }) }
+
+    // Log usage (non-blocking)
+    const usageData = extractGroqUsage({ usage: groqResult.usage })
+    logUsage(supabase, user.id, {
+      endpoint:          'kb_generate',
+      model:             GROQ_MODEL,
+      prompt_tokens:     usageData.prompt_tokens,
+      completion_tokens: usageData.completion_tokens,
+      total_tokens:      usageData.total_tokens,
+      cost_usd:          calculateCost(GROQ_MODEL, usageData.prompt_tokens, usageData.completion_tokens),
+      latency_ms:        groqResult.latency_ms,
+      success:           true,
+    }).catch(console.error)
 
     let md = `# ${article.title}\n\n${article.intro ?? ''}\n\n`
     for (const s of article.sections ?? []) {

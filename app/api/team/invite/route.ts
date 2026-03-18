@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserWorkspaceId, requireRole } from '@/lib/workspace'
 import { getUserPlan } from '@/lib/get-user-plan'
 import { canAccess } from '@/lib/plan-guard'
+import { rateLimiters, rateLimitResponse, sanitizeText, sanitizeField, sanitizeName, sanitizeEmail, sanitizeInt, sanitizeRole, isSuspicious } from '@/lib/security'
 import { sendEmail } from '@/lib/email'
 
 export async function POST(request: Request) {
@@ -22,14 +25,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const { email, role = 'agent' } = await request.json()
+    // Rate limit — 10 invites per hour
+    const rl = rateLimiters.invite(user.id)
+    if (!rl.success) return rateLimitResponse(rl)
 
-    if (!email?.trim()) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-    }
-    if (!['admin', 'agent'].includes(role)) {
-      return NextResponse.json({ error: 'Role must be admin or agent' }, { status: 400 })
-    }
+    const body = await request.json()
+    const email = sanitizeEmail(body.email)
+    const role  = sanitizeRole(body.role) ?? 'agent'
+
+    if (!email) return NextResponse.json({ error: 'Valid email is required' }, { status: 400 })
 
     const workspaceId = await getUserWorkspaceId(user.id)
     if (!workspaceId) {
@@ -75,8 +79,8 @@ export async function POST(request: Request) {
       .from('invites')
       .insert({
         workspace_id: workspaceId,
-        invited_by: user.id,
-        email: email.toLowerCase(),
+        invited_by:   user.id,
+        email:        email.toLowerCase(),
         role,
       })
       .select()
@@ -98,28 +102,28 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
 
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/accept?token=${invite.token}`
+    const inviteUrl   = `${process.env.NEXT_PUBLIC_APP_URL}/invite/accept?token=${invite.token}`
     const inviterName = inviter?.full_name ?? inviter?.email ?? 'Someone'
     const workspaceName = workspace?.name ?? 'a workspace'
 
     // Send invite email
     await sendEmail({
-      to: email,
-      subject: `${inviterName} invited you to join ${workspaceName} on Replify`,
+      to:      email,
+      subject: `${inviterName} invited you to join ${workspaceName} on SupportPilot`,
       html: `
         <!DOCTYPE html>
         <html>
         <body style="font-family:sans-serif;background:#F9FAFB;padding:40px 0;">
           <table width="600" style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden;">
             <tr><td style="background:#2563EB;padding:28px 32px;">
-              <h1 style="margin:0;font-size:22px;color:#fff;">You're invited to join Replify</h1>
+              <h1 style="margin:0;font-size:22px;color:#fff;">You're invited to join SupportPilot</h1>
             </td></tr>
             <tr><td style="padding:28px 32px;">
               <p style="color:#374151;font-size:15px;line-height:1.6;">
-                <strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on Replify as a <strong>${role}</strong>.
+                <strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on SupportPilot as a <strong>${role}</strong>.
               </p>
               <p style="color:#6B7280;font-size:14px;line-height:1.6;">
-                Replify uses AI to analyze support tickets and automatically generate replies — saving your team hours every day.
+                SupportPilot uses AI to analyze support tickets and automatically generate replies — saving your team hours every day.
               </p>
               <table style="margin-top:24px;">
                 <tr><td style="background:#2563EB;border-radius:10px;">
