@@ -1,0 +1,158 @@
+/* Lato — body font (Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
+/* Metropolis — display/heading font (self-hosted via CDN) */
+@font-face {
+  font-family: 'Metropolis';
+  src: url('https://cdn.jsdelivr.net/gh/chrismsimpson/Metropolis@r7/Metropolis-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('https://cdn.jsdelivr.net/gh/chrismsimpson/Metropolis@r7/Metropolis-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('https://cdn.jsdelivr.net/gh/chrismsimpson/Metropolis@r7/Metropolis-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('https://cdn.jsdelivr.net/gh/chrismsimpson/Metropolis@r7/Metropolis-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Metropolis';
+  src: url('https://cdn.jsdelivr.net/gh/chrismsimpson/Metropolis@r7/Metropolis-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-gray-900 bg-white antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* Reusable card */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-card;
+  }
+
+  /* Badge variants */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-urgent  { @apply bg-red-100 text-red-800; }
+  .badge-medium  { @apply bg-amber-100 text-amber-800; }
+  .badge-low     { @apply bg-emerald-100 text-emerald-800; }
+  .badge-blue    { @apply bg-blue-100 text-blue-800; }
+  .badge-purple  { @apply bg-purple-100 text-purple-800; }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white
+           font-medium text-sm transition-all duration-150
+           hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md
+           active:translate-y-0 active:shadow-none
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+           disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-transparent
+           border border-gray-200 text-gray-700 font-medium text-sm
+           transition-all duration-150
+           hover:bg-gray-50 hover:border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2
+           disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white
+           text-sm text-gray-900 placeholder-gray-400
+           transition-all duration-150
+           focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10;
+  }
+
+  /* Sidebar nav button */
+  .sidebar-item {
+    @apply flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500
+           font-medium transition-all duration-150
+           hover:bg-gray-100 hover:text-gray-900;
+  }
+  .sidebar-item.active {
+    @apply bg-blue-50 text-blue-700;
+  }
+
+  /* Metric card */
+  .metric-card {
+    @apply bg-white border border-gray-200 rounded-xl p-5 shadow-card
+           hover:shadow-md transition-shadow duration-200;
+  }
+}
+
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #BFDBFE;
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Mobile responsive fixes ────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Larger touch targets on mobile */
+  .btn-primary, .btn-ghost {
+    @apply min-h-[44px];
+  }
+
+  /* Full-width buttons in forms on mobile */
+  .form-input {
+    @apply text-base; /* prevents iOS zoom on focus */
+  }
+
+  /* Tighter card padding on mobile */
+  .card {
+    @apply rounded-xl;
+  }
+
+  /* Sidebar items bigger on mobile */
+  .sidebar-item {
+    @apply py-3 text-base;
+  }
+}
