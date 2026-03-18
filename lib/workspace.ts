@@ -60,12 +60,12 @@ export async function getWorkspaceMembers(workspaceId: string): Promise<Workspac
   const supabase = createClient()
   const { data, error } = await supabase
     .from('workspace_members')
-    .select('id, role, joined_at, last_seen_at, user_id, users(email, full_name)')
+    .select('id, workspace_id, role, joined_at, last_seen_at, user_id, users(email, full_name)')
     .eq('workspace_id', workspaceId)
     .order('joined_at', { ascending: true })
 
   if (error) console.error('[getWorkspaceMembers]', error)
-  return (data ?? []) as WorkspaceMember[]
+  return (data ?? []) as unknown as WorkspaceMember[]
 }
 
 export async function requireRole(

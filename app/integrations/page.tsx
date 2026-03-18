@@ -30,7 +30,7 @@ export default async function IntegrationsPage() {
         requiredPlan="Pro"
         currentPlan={plan}
       >
-        <IntegrationsClient integrations={integrations ?? []} />
+        <IntegrationsClient connections={integrations ?? []} userId={user.id} />
       </PlanGate>
     </AppShell>
   )

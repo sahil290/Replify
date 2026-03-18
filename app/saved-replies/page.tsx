@@ -15,7 +15,7 @@ export default async function SavedRepliesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <AppShell user={{ email: user.email, full_name: user.user_metadata?.full_name }}>
+    <AppShell>
       <div className="mb-7">
         <h1 className="text-2xl font-bold text-gray-900">Saved Replies</h1>
         <p className="text-sm text-gray-500 mt-1">Your library of AI-generated replies approved for reuse.</p>

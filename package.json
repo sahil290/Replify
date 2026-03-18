@@ -1,15 +1,16 @@
 {
-  "name": "Replify",
+  "name": "supportpilot",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev":   "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint":  "next lint",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.5.1",
+    "@supabase/ssr": "0.1.0",
     "@supabase/supabase-js": "^2.45.4",
     "next": "14.2.16",
     "react": "^18",
@@ -17,7 +18,11 @@
     "recharts": "^2.13.0",
     "lucide-react": "^0.453.0",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.4"
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^2.5.4",
+    "resend": "^3.2.0",
+    "@upstash/qstash": "^2.7.0",
+    "@upstash/redis": "^1.34.0"
   },
   "devDependencies": {
     "@types/node": "^20",
