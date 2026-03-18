@@ -15,7 +15,7 @@ export const PLANS = {
   starter: {
     id:      'starter',
     name:    'Starter',
-    prices:  { INR: 2700, USD: 29 },
+    prices:  { INR: 3000, USD: 29 },
     tickets: 100,
     features: [
       '100 tickets / month',
@@ -35,7 +35,7 @@ export const PLANS = {
   pro: {
     id:      'pro',
     name:    'Pro',
-    prices:  { INR: 7500, USD: 79 },
+    prices:  { INR: 8000, USD: 79 },
     tickets: 1000,
     features: [
       '1,000 tickets / month',
@@ -54,7 +54,7 @@ export const PLANS = {
   business: {
     id:      'business',
     name:    'Business',
-    prices:  { INR: 18000, USD: 199 },
+    prices:  { INR: 19000, USD: 199 },
     tickets: Infinity,
     features: [
       'Unlimited tickets',
@@ -95,5 +95,24 @@ export function detectCurrency(): SupportedCurrency {
     return 'USD'
   } catch {
     return 'USD'
+  }
+}
+
+// ── Signature verification (server-side only) ─────────────────
+export async function verifyRazorpaySignature(
+  body:      string,
+  signature: string,
+  secret:    string
+): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    )
+    const sig    = await crypto.subtle.sign('HMAC', key, encoder.encode(body))
+    const hex    = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+    return hex === signature
+  } catch {
+    return false
   }
 }

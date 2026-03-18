@@ -75,8 +75,10 @@ export interface AnalyzeTicketResponse {
   suggested_reply:      string
   frustration_score?:   number
   frustration_signals?: string[]
-  churn_risk?:          'high' | 'medium' | 'low'
+  signals?:             string[]
+  churn_risk?:          'high' | 'medium' | 'low' | 'critical'
   ticket_id?:           string | null
+  _cached?:             boolean
   _usage?: {
     prompt_tokens:     number
     completion_tokens: number
